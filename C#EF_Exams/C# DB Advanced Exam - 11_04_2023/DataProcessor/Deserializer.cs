@@ -111,9 +111,15 @@
                 //var currDueData = DateTime.ParseExact(invoice.DueDate, "yyyyMMddTHH:mm:ss", CultureInfo.InvariantCulture);
                 var currDueData = DateTime.TryParse(invoice.DueDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out resultData);
                 var currIssueData = DateTime.TryParse(invoice.IssueDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out resultIssue);
-                var validType = Enum.TryParse<CurrencyType>( invoice.CurrencyType.ToString(), true, out currType);
+                var validType = Enum.TryParse<CurrencyType>(invoice.CurrencyType.ToString(), true, out currType);
 
-                if (!currDueData || !currIssueData ||!validType)
+                if(!context.Clients.Any(c => c.Id == invoice.ClientId))
+                {
+                    sb.AppendLine("Invalid data!");
+                    continue;
+                }
+
+                if (!currDueData || !currIssueData || !validType)
                 {
                     sb.AppendLine("Invalid data!");
                     continue;
@@ -130,9 +136,9 @@
                     Amount = invoice.Amount,
                     CurrencyType = currType,
                     DueDate = resultData,
-                    IssueDate = resultData,
+                    IssueDate = resultIssue,
                     Number = invoice.Number,
-                    ClientId = invoice.ClientId,
+                    ClientId = (int)invoice.ClientId,
                 };
 
                 validInvoices.Add(importInvoice);
@@ -163,37 +169,51 @@
                     continue;
                 }
 
+                if (!IsValid(product.Clients))
+                {
+                    sb.AppendLine("Invalid data!");
+                    continue;
+                }
+
                 var uniqueClients = product.Clients.Distinct().ToList();
+
+                CategoryType categoryType;
+                var validType = Enum.TryParse<CategoryType>(product.CategoryType.ToString(), true, out categoryType);
+
+                if (!validType)
+                {
+                    sb.AppendLine("Invalid data!");
+                    continue;
+                }
 
                 var newPorduct = new Product
                 {
-                    CategoryType = product.CategoryType,
+                    CategoryType = categoryType,
                     Name = product.Name,
                     Price = (decimal)product.Price,
                 };
 
-                var cout = 0;
+                var count = 0;
                 foreach (var client in uniqueClients)
                 {
 
-                    if (!context.Clients.Any(c => c.Id == client.Id))
+                    if (!context.Clients.Any(c => c.Id == client))
                     {
                         sb.AppendLine("Invalid data!");
                         continue;
                     }
-                    cout++;
+                    count++;
 
                     newPorduct.ProductsClients.Add(new ProductClient
                     {
-                        ClientId = client.Id,
+                        ClientId = client,
                     });
 
-                    validProducts.Add(newPorduct);
 
                 };
-                sb.AppendLine($"Successfully imported product - {product.Name} with {cout} clients.");
 
-                context.SaveChanges();
+                validProducts.Add(newPorduct);
+                sb.AppendLine($"Successfully imported product - {product.Name} with {count} clients.");
 
             }
             context.AddRange(validProducts);

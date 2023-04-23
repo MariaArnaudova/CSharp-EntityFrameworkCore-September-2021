@@ -20,9 +20,9 @@ namespace Invoices.DataProcessor.ImportDto
         public decimal Price { get; set; }
 
         [Required]
-        public CategoryType CategoryType { get; set; }
+        public string CategoryType { get; set; }
 
-        public List<Client> Clients { get; set; }
+        public List<int> Clients { get; set; }
 
     }
 

@@ -108,9 +108,10 @@
                 DateTime resultIssue;
                 CurrencyType currType;
 
-                //var currDueData = DateTime.ParseExact(invoice.DueDate, "yyyyMMddTHH:mm:ss", CultureInfo.InvariantCulture);
-                var currDueData = DateTime.TryParse(invoice.DueDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out resultData);
-                var currIssueData = DateTime.TryParse(invoice.IssueDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out resultIssue);
+                var currDueData = DateTime.TryParseExact(invoice.DueDate, "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out resultData);
+                var currIssueData = DateTime.TryParseExact(invoice.IssueDate, "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out resultIssue);
+                //var currDueData = DateTime.TryParse(invoice.DueDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out resultData);
+                //var currIssueData = DateTime.TryParse(invoice.IssueDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out resultIssue);
                 var validType = Enum.TryParse<CurrencyType>(invoice.CurrencyType.ToString(), true, out currType);
 
                 if(!context.Clients.Any(c => c.Id == invoice.ClientId))
